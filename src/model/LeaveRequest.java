@@ -1,32 +1,34 @@
 package model;
 
-import java.time.LocalDate;
+
+import java.sql.Date;
 
 public class LeaveRequest {
-  //  private Long id;
+   private Long id;
     private Employee employee;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private Date startDate;
+    private Date endDate;
     private boolean approved = false;
 
 
     public LeaveRequest() {
     }
 
-    public LeaveRequest(Employee employee, LocalDate startDate, LocalDate endDate, boolean approved) {
+    public LeaveRequest(Long id,Employee employee, Date startDate, Date endDate, boolean approved) {
+        this.id = id;
         this.employee = employee;
         this.startDate = startDate;
         this.endDate = endDate;
         this.approved = approved;
     }
 
-   // public Long getId() {
-  //      return id;
- //   }
+    public Long getId() {
+        return id;
+    }
 
-  //  public void setId(Long id) {
-   //     this.id = id;
-  //  }
+    public void setId(Long id) {
+        this.id = id;
+    }
     public Employee getEmployee() {
         return employee;
     }
@@ -35,19 +37,19 @@ public class LeaveRequest {
         this.employee = employee;
     }
 
-    public LocalDate getStartDate() {
+    public Date getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDate getEndDate() {
+    public Date getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
 

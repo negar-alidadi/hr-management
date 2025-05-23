@@ -5,6 +5,8 @@ import model.Employee;
 import model.LeaveRequest;
 import repository.LeaveRequestRepository;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,19 +15,21 @@ public class LeaveRequestService {
     public LeaveRequestService(LeaveRequestRepository repository) {
         this.repository = repository;
     }
-    public void submitLeaveRequest(LeaveRequestDto leaveRequestDto) {
-        Employee employee = new Employee(leaveRequestDto.getEmployeeId(),
-                leaveRequestDto.getEmployeeName(),
-                leaveRequestDto.getEmployeeLastName(),
-                leaveRequestDto.getNationalId(),
-                leaveRequestDto.getEmployeeCode());
-        LeaveRequest leaveRequest = new LeaveRequest(employee,leaveRequestDto.getStartDate(),leaveRequestDto.getEndDate(),false);
+    public void submitLeaveRequest(Employee employee,LeaveRequestDto leaveRequestDto) throws SQLException {
+        leaveRequestDto.setEmployeeId(employee.getId());
+        leaveRequestDto.setEmployeeName(employee.getFirstName());
+        leaveRequestDto.setEmployeeLastName(employee.getLastName());
+        leaveRequestDto.setEmployeeCode(employee.getEmployeeId());
+        leaveRequestDto.setNationalId(employee.getNationalId());
+        LeaveRequest leaveRequest = new LeaveRequest(leaveRequestDto.getId(),employee,leaveRequestDto.getStartDate(),leaveRequestDto.getEndDate(),false);
         repository.save(leaveRequest);
+        System.out.println("done");
     }
-    public List<LeaveRequestDto> getLeaveRequests() {
+    public List<LeaveRequestDto> getLeaveRequests() throws SQLException {
         List<LeaveRequest> leaveRequests = repository.findAll();
+        LeaveRequestDto leaveRequestDto = new LeaveRequestDto();
        return leaveRequests.stream().map(r -> {
-            LeaveRequestDto leaveRequestDto = new LeaveRequestDto();
+            leaveRequestDto.setId(r.getId());
             leaveRequestDto.setEmployeeId(r.getEmployee().getId());
             leaveRequestDto.setEmployeeName(r.getEmployee().getFirstName());
             leaveRequestDto.setEmployeeLastName(r.getEmployee().getLastName());
@@ -36,9 +40,8 @@ public class LeaveRequestService {
             return leaveRequestDto;
         }).toList();
     }
-    public void approveLeaveRequest(LeaveRequestDto leaveRequestDto) {
-        LeaveRequest leaveRequest = repository.findById(leaveRequestDto.getEmployeeId())
-                .orElseThrow(()->new RuntimeException("Leave Request with id" +leaveRequestDto.getEmployeeId()+  "Not Found"));
+    public void approveLeaveRequest(LeaveRequestDto leaveRequestDto) throws SQLException {
+        LeaveRequest leaveRequest = repository.findById(leaveRequestDto.getEmployeeId());
         leaveRequest.setApproved(true);
         repository.save(leaveRequest);
         System.out.println("Leave Request Approved");

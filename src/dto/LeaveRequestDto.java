@@ -1,18 +1,20 @@
 package dto;
 
+import java.sql.Date;
 import java.time.LocalDate;
 
 public class LeaveRequestDto {
+    private Long id;
     private Long employeeId;
     private String employeeFirstName;
     private String employeeLastName;
     private int nationalId;
     private String employeeCode;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private Date startDate;
+    private Date endDate;
     private boolean approved = false;
 
-    public LeaveRequestDto(Long employeeId, String employeeFirstName, LocalDate endDate, LocalDate startDate, String employeeCode, int nationalId, String employeeLastName, boolean approved) {
+    public LeaveRequestDto(Long employeeId, String employeeFirstName, Date endDate, Date startDate, String employeeCode, int nationalId, String employeeLastName, boolean approved) {
         this.employeeId = employeeId;
         this.employeeFirstName = employeeFirstName;
         this.endDate = endDate;
@@ -21,6 +23,13 @@ public class LeaveRequestDto {
         this.nationalId = nationalId;
         this.employeeLastName = employeeLastName;
         this.approved = approved;
+    }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public boolean isApproved() {
@@ -74,19 +83,19 @@ public class LeaveRequestDto {
         this.nationalId = nationalId;
     }
 
-    public LocalDate getStartDate() {
+    public Date getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDate getEndDate() {
+    public Date getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
 }
