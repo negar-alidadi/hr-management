@@ -38,10 +38,13 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
         try(Connection connection = JDBC.getConnection();
             PreparedStatement preparedStatement=  connection.prepareStatement(("select * from leave_request"))){
         ResultSet resultSet = preparedStatement.executeQuery();
+        resultSet.next();
+        Employee employee = employeeRepository.findEmployeeById(resultSet.getLong("employeeId"));
         List<LeaveRequest> leaveRequests = new ArrayList<>();
         while (resultSet.next()) {
             LeaveRequest leaveRequest = new LeaveRequest();
             leaveRequest.setId(resultSet.getLong("id"));
+            leaveRequest.setEmployee(employee);
             leaveRequest.setStartDate(resultSet.getDate("startDate"));
             leaveRequest.setEndDate(resultSet.getDate("endDate"));
             leaveRequest.setApproved(resultSet.getBoolean("approved"));
@@ -58,7 +61,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
             preparedStatement.setLong(1, id);
             LeaveRequest leaveRequest = new LeaveRequest();
             ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
+            while (resultSet.next()) {
                 leaveRequest.setId(resultSet.getLong("id"));
                 Long employeeId = resultSet.getLong("employeeId");
                 Employee employee = employeeRepository.findEmployeeById(employeeId);

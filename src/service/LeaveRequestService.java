@@ -41,9 +41,9 @@ public class LeaveRequestService {
         }).toList();
     }
     public void approveLeaveRequest(LeaveRequestDto leaveRequestDto) throws SQLException {
-        LeaveRequest leaveRequest = repository.findById(leaveRequestDto.getEmployeeId());
+        LeaveRequest leaveRequest = repository.findById(leaveRequestDto.getId());
         leaveRequest.setApproved(true);
-        repository.save(leaveRequest);
+        repository.update(leaveRequest);
         System.out.println("Leave Request Approved");
     }
 }

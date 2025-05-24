@@ -34,7 +34,7 @@ public class Main {
         leaveRequestDto.setId(5l);
         leaveRequestDto.setApproved(false);
        // leaveRequestController.submitLeaveRequest(employee,leaveRequestDto);
-       //    leaveRequestController.showAllLeaveRequests();
-     //   leaveRequestController.approveLeaveRequest(leaveRequestDto);
+       //   leaveRequestController.showAllLeaveRequests();
+        leaveRequestController.approveLeaveRequest(leaveRequestDto);
     }
 }
