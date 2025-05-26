@@ -21,17 +21,42 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
     }
 
     @Override
-    public void save(LeaveRequest leaveRequest) throws SQLException {
-        try(Connection connection = JDBC.getConnection();
-            PreparedStatement preparedStatement=  connection.prepareStatement(("insert into leave_request (id,employeeId,startDate,endDate,approved) values (?,?,?,?,?)"))){
-        preparedStatement.setLong(1, leaveRequest.getId());
-        preparedStatement.setLong(2, leaveRequest.getEmployee().getId());
-        preparedStatement.setDate(3,leaveRequest.getStartDate());
-        preparedStatement.setDate(4,leaveRequest.getEndDate());
-        preparedStatement.setBoolean(5,leaveRequest.isApproved());
-        preparedStatement.executeQuery();
+        public void save(LeaveRequest leaveRequest,Long employeeId) throws SQLException {
+            String seqSQL = "select request_seq.nextval id from dual";
+            String insertSQL = "insert into leave_request (id, employeeId, startDate, endDate, approved) values (?,?,?,?,?)";
 
-    }}
+            try (Connection connection = JDBC.getConnection();
+                 PreparedStatement seqStmt = connection.prepareStatement(seqSQL);
+                 ResultSet resultSet = seqStmt.executeQuery()) {
+                resultSet.next();
+                leaveRequest.setId(resultSet.getLong("id"));
+
+
+                try (PreparedStatement insertStmt = connection.prepareStatement(insertSQL)) {
+                    insertStmt.setLong(1, leaveRequest.getId());
+                    insertStmt.setLong(2, employeeId);
+                    insertStmt.setDate(3, leaveRequest.getStartDate());
+                    insertStmt.setDate(4, leaveRequest.getEndDate());
+                    insertStmt.setBoolean(5, leaveRequest.isApproved());
+                    insertStmt.executeUpdate();
+                }
+            }
+        }
+//        try(Connection connection = JDBC.getConnection();
+//            PreparedStatement preparedStatement= connection
+//                    .prepareStatement("select request_seq.nextval id from dual")){
+//            ResultSet resultSet = preparedStatement.executeQuery();
+//            resultSet.next();
+//            leaveRequest.setId(resultSet.getLong("id"));
+//            connection.prepareStatement(("insert into leave_request (id,employeeId,startDate,endDate,approved) values (?,?,?,?,?)"));
+//        preparedStatement.setLong(1, leaveRequest.getId());
+//        preparedStatement.setLong(2, leaveRequest.getEmployee().getId());
+//        preparedStatement.setDate(3,leaveRequest.getStartDate());
+//        preparedStatement.setDate(4,leaveRequest.getEndDate());
+//        preparedStatement.setBoolean(5,leaveRequest.isApproved());
+//        preparedStatement.executeQuery();
+//
+//    }}
 
     @Override
     public List<LeaveRequest> findAll() throws SQLException {
@@ -56,6 +81,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
     @Override
     public LeaveRequest findById(Long id) throws SQLException {
         try(Connection connection = JDBC.getConnection();
+
             PreparedStatement preparedStatement=  connection.prepareStatement("select * from leave_request where id = ?")){
         {
             preparedStatement.setLong(1, id);
@@ -75,23 +101,35 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
     }
 
     @Override
-    public void update(LeaveRequest leaveRequest) throws SQLException {
+    public void update(Long id,LeaveRequest leaveRequest) throws SQLException {
         try(Connection connection = JDBC.getConnection();
             PreparedStatement preparedStatement=  connection.prepareStatement(("update leave_request set employeeId = ?, startDate = ?, endDate = ?, approved = ? where id = ?"))){
         preparedStatement.setLong(1, leaveRequest.getEmployee().getId());
         preparedStatement.setDate(2, leaveRequest.getStartDate());
         preparedStatement.setDate(3, leaveRequest.getEndDate());
         preparedStatement.setBoolean(4, leaveRequest.isApproved());
-        preparedStatement.setLong(5, leaveRequest.getId());
-        preparedStatement.executeUpdate();
+        preparedStatement.setLong(5, id);
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected == 0) {
+                System.out.println("No employee found with id: " + id);
+            } else {
+                System.out.println("Employee with id " + id + " updated successfully.");
+            }
     }}
 
     @Override
-    public void delete(LeaveRequest leaveRequest) throws SQLException {
+    public void delete(Long id) throws SQLException {
         try(Connection connection = JDBC.getConnection();
             PreparedStatement preparedStatement=  connection.prepareStatement("delete from leave_request where id = ?")){
-        preparedStatement.setLong(1, leaveRequest.getId());
-        preparedStatement.executeUpdate();
+        preparedStatement.setLong(1, id);
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected == 0) {
+                System.out.println("No employee found with id: " + id);
+            } else {
+                System.out.println("Employee with id " + id + " updated successfully.");
+            }
     }}
 
 //    @Override

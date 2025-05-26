@@ -14,9 +14,9 @@ public class LeaveRequestController {
     public LeaveRequestController(LeaveRequestService leaveRequestService) {
         this.leaveRequestService = leaveRequestService;
     }
-    public void submitLeaveRequest(Employee employee,LeaveRequestDto leaveRequestDto) {
+    public void submitLeaveRequest(LeaveRequestDto leaveRequestDto,Long employeeId) throws SQLException {
         try {
-            leaveRequestService.submitLeaveRequest(employee,leaveRequestDto);
+            leaveRequestService.submitLeaveRequest(leaveRequestDto,employeeId);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -37,9 +37,9 @@ public class LeaveRequestController {
         }
         return leaveRequestDtos;
     }
-    public void approveLeaveRequest(LeaveRequestDto leaveRequestDto) {
+    public void approveLeaveRequest(Long leaveRequestId) {
         try {
-            leaveRequestService.approveLeaveRequest(leaveRequestDto);
+            leaveRequestService.approveLeaveRequest(leaveRequestId);
         } catch (SQLException e) {
             e.printStackTrace();
         }

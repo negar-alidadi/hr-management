@@ -3,6 +3,7 @@ package service;
 import dto.LeaveRequestDto;
 import model.Employee;
 import model.LeaveRequest;
+import repository.EmployeeRepository;
 import repository.LeaveRequestRepository;
 
 import java.sql.SQLException;
@@ -12,17 +13,20 @@ import java.util.Optional;
 
 public class LeaveRequestService {
     private LeaveRequestRepository repository;
-    public LeaveRequestService(LeaveRequestRepository repository) {
+    private EmployeeRepository employeeRepository;
+    public LeaveRequestService(LeaveRequestRepository repository, EmployeeRepository employeeRepository) {
         this.repository = repository;
+        this.employeeRepository = employeeRepository;
     }
-    public void submitLeaveRequest(Employee employee,LeaveRequestDto leaveRequestDto) throws SQLException {
+    public void submitLeaveRequest(LeaveRequestDto leaveRequestDto, Long employeeId) throws SQLException {
+       Employee employee = employeeRepository.findEmployeeById(employeeId);
         leaveRequestDto.setEmployeeId(employee.getId());
         leaveRequestDto.setEmployeeName(employee.getFirstName());
         leaveRequestDto.setEmployeeLastName(employee.getLastName());
         leaveRequestDto.setEmployeeCode(employee.getEmployeeId());
         leaveRequestDto.setNationalId(employee.getNationalId());
         LeaveRequest leaveRequest = new LeaveRequest(leaveRequestDto.getId(),employee,leaveRequestDto.getStartDate(),leaveRequestDto.getEndDate(),false);
-        repository.save(leaveRequest);
+        repository.save(leaveRequest, employeeId);
         System.out.println("done");
     }
     public List<LeaveRequestDto> getLeaveRequests() throws SQLException {
@@ -40,10 +44,10 @@ public class LeaveRequestService {
             return leaveRequestDto;
         }).toList();
     }
-    public void approveLeaveRequest(LeaveRequestDto leaveRequestDto) throws SQLException {
-        LeaveRequest leaveRequest = repository.findById(leaveRequestDto.getId());
+    public void approveLeaveRequest(Long leaveRequestId) throws SQLException {
+        LeaveRequest leaveRequest = repository.findById(leaveRequestId);
         leaveRequest.setApproved(true);
-        repository.update(leaveRequest);
+        repository.update(leaveRequestId ,leaveRequest);
         System.out.println("Leave Request Approved");
     }
 }
