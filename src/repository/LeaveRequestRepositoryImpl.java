@@ -2,6 +2,7 @@ package repository;
 
 import common.JDBC;
 import dto.LeaveRequestDto;
+import exception.SqlConnectionEx;
 import model.Employee;
 import model.LeaveRequest;
 
@@ -15,13 +16,13 @@ import java.util.Optional;
 
 public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
-    private EmployeeRepositoryImpl employeeRepository;
-    public LeaveRequestRepositoryImpl(EmployeeRepositoryImpl employeeRepository)  {
+    private EmployeeRepository employeeRepository;
+    public LeaveRequestRepositoryImpl(EmployeeRepository employeeRepository)  {
         this.employeeRepository = employeeRepository;
     }
 
     @Override
-        public void save(LeaveRequest leaveRequest,Long employeeId) throws SQLException {
+        public void save(LeaveRequest leaveRequest,Long employeeId)  {
             String seqSQL = "select request_seq.nextval id from dual";
             String insertSQL = "insert into leave_request (id, employeeId, startDate, endDate, approved) values (?,?,?,?,?)";
 
@@ -40,6 +41,8 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
                     insertStmt.setBoolean(5, leaveRequest.isApproved());
                     insertStmt.executeUpdate();
                 }
+            }catch (SQLException e){
+                throw new SqlConnectionEx("data base connection failed"+e.getMessage());
             }
         }
 //        try(Connection connection = JDBC.getConnection();
@@ -59,7 +62,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 //    }}
 
     @Override
-    public List<LeaveRequest> findAll() throws SQLException {
+    public List<LeaveRequest> findAll()  {
         try(Connection connection = JDBC.getConnection();
             PreparedStatement preparedStatement=  connection.prepareStatement(("select * from leave_request"))){
         ResultSet resultSet = preparedStatement.executeQuery();
@@ -76,10 +79,12 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
             leaveRequests.add(leaveRequest);
         }
         return leaveRequests;
-    }}
+    }catch (SQLException e){
+            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
+        }}
 
     @Override
-    public LeaveRequest findById(Long id) throws SQLException {
+    public LeaveRequest findById(Long id)  {
         try(Connection connection = JDBC.getConnection();
 
             PreparedStatement preparedStatement=  connection.prepareStatement("select * from leave_request where id = ?")){
@@ -97,11 +102,13 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
                 leaveRequest.setApproved(resultSet.getBoolean("approved"));
             }
             return leaveRequest;
-        }}
+        }}catch (SQLException e){
+            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
+        }
     }
 
     @Override
-    public void update(Long id,LeaveRequest leaveRequest) throws SQLException {
+    public void update(Long id,LeaveRequest leaveRequest)  {
         try(Connection connection = JDBC.getConnection();
             PreparedStatement preparedStatement=  connection.prepareStatement(("update leave_request set employeeId = ?, startDate = ?, endDate = ?, approved = ? where id = ?"))){
         preparedStatement.setLong(1, leaveRequest.getEmployee().getId());
@@ -116,10 +123,12 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
             } else {
                 System.out.println("Employee with id " + id + " updated successfully.");
             }
-    }}
+    }catch (SQLException e){
+            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
+        }}
 
     @Override
-    public void delete(Long id) throws SQLException {
+    public void delete(Long id)  {
         try(Connection connection = JDBC.getConnection();
             PreparedStatement preparedStatement=  connection.prepareStatement("delete from leave_request where id = ?")){
         preparedStatement.setLong(1, id);
@@ -130,7 +139,9 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
             } else {
                 System.out.println("Employee with id " + id + " updated successfully.");
             }
-    }}
+    }catch (SQLException e){
+            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
+        }}
 
 //    @Override
 //    public void commit() throws SQLException {

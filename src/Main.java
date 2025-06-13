@@ -2,10 +2,7 @@ import controller.EmployeeController;
 import controller.LeaveRequestController;
 import dto.LeaveRequestDto;
 import model.Employee;
-import repository.EmployeeRepository;
-import repository.EmployeeRepositoryImpl;
-import repository.LeaveRequestRepository;
-import repository.LeaveRequestRepositoryImpl;
+import repository.*;
 import service.EmployeeService;
 import service.LeaveRequestService;
 
@@ -18,7 +15,7 @@ public class Main {
 
     public static void main(String[] args) throws SQLException {
 
-        EmployeeRepositoryImpl employeeRepository = new EmployeeRepositoryImpl();
+        EmployeeRepository employeeRepository = new EmployeeProxyImpl();
         LeaveRequestRepository leaveRequestRepository = new LeaveRequestRepositoryImpl(employeeRepository);
 
         LeaveRequestService leaveRequestService = new LeaveRequestService(leaveRequestRepository,employeeRepository);

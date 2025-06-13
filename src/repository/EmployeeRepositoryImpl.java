@@ -1,8 +1,10 @@
 package repository;
 
 import common.JDBC;
+import exception.SqlConnectionEx;
 import model.Employee;
 
+import java.lang.invoke.StringConcatException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,7 +15,7 @@ import java.util.List;
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     @Override
-    public Employee save(Employee employee) throws SQLException {
+    public Employee save(Employee employee)  {
         String seqSQL = "select employee_seq.nextval AS id from dual";
         String insertSQL = "insert into employees (id, firstName, lastName, nationalId, employeeId) values (?,?,?,?,?)";
 
@@ -33,12 +35,14 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
                 insertStmt.setString(5, employee.getEmployeeId());
                 insertStmt.executeUpdate();
             }
+        }catch (SQLException e){
+            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
         }
         return employee;
     }
 
     @Override
-    public List<Employee> findAll() throws SQLException {
+    public List<Employee> findAll()  {
         try(Connection connection = JDBC.getConnection();
             PreparedStatement preparedStatement=  connection.prepareStatement(("select * from employees"))){
         ResultSet resultSet = preparedStatement.executeQuery();
@@ -53,19 +57,24 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             employeeList.add(employee);
         }
         return employeeList;
-            }
+            }catch (SQLException e){
+            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
+        }
     }
 
     @Override
-    public void delete(Long id) throws SQLException {
+    public void delete(Long id)  {
         try(Connection connection = JDBC.getConnection();
             PreparedStatement preparedStatement=  connection.prepareStatement(("delete from employees where id=?"))){
         preparedStatement.setLong(1, id);
         preparedStatement.executeUpdate();
-    }}
+    }
+        catch (SQLException e){
+            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
+        }}
 
     @Override
-    public void update(Long id, Employee employee) throws SQLException {
+    public void update(Long id, Employee employee)  {
         try(Connection connection = JDBC.getConnection();
             PreparedStatement preparedStatement=  connection.prepareStatement(("update employees set firstName=?, lastName=?, nationalId=?,dmployeeId=? where id=?"))){
         preparedStatement.setString(1, employee.getFirstName());
@@ -80,10 +89,13 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             } else {
                 System.out.println("Employee with id " + id + " updated successfully.");
             }
-    }}
+    }
+        catch (SQLException e){
+            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
+        }}
 
     @Override
-    public Employee findEmployeeById(Long id) throws SQLException {
+    public Employee findEmployeeById(Long id)  {
         try(Connection connection = JDBC.getConnection();
             PreparedStatement preparedStatement=  connection.prepareStatement(("select * from employees where id=?"))){
         preparedStatement.setLong(1, id);
@@ -97,6 +109,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             employee.setEmployeeId(resultSet.getString("employeeId"));
         }
             return employee;
+        }catch (SQLException e){
+            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
         }
     }
 
