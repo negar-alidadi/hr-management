@@ -12,7 +12,7 @@ public class JDBC {
 
     private static final String URL = "jdbc:oracle:thin:@localhost:1521/xe";
     private static final String USER = "negar";
-    private static final String PASSWORD = "myjava123";
+    private static final String PASSWORD = "myjava1234";
 
     static {
         try {

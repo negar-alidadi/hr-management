@@ -1,6 +1,7 @@
 package service;
 
 import dto.LeaveRequestDto;
+import exception.SqlConnectionEx;
 import model.Employee;
 import model.LeaveRequest;
 import repository.EmployeeRepository;
@@ -18,8 +19,9 @@ public class LeaveRequestService {
         this.repository = repository;
         this.employeeRepository = employeeRepository;
     }
-    public void submitLeaveRequest(LeaveRequestDto leaveRequestDto, Long employeeId) throws SQLException {
-       Employee employee = employeeRepository.findEmployeeById(employeeId);
+    public void submitLeaveRequest(LeaveRequestDto leaveRequestDto, Long employeeId) throws SqlConnectionEx {
+      try {
+          Employee employee = employeeRepository.findEmployeeById(employeeId);
         leaveRequestDto.setEmployeeId(employee.getId());
         leaveRequestDto.setEmployeeName(employee.getFirstName());
         leaveRequestDto.setEmployeeLastName(employee.getLastName());
@@ -27,9 +29,11 @@ public class LeaveRequestService {
         leaveRequestDto.setNationalId(employee.getNationalId());
         LeaveRequest leaveRequest = new LeaveRequest(leaveRequestDto.getId(),employee,leaveRequestDto.getStartDate(),leaveRequestDto.getEndDate(),false);
         repository.save(leaveRequest, employeeId);
-        System.out.println("done");
+      }catch (SqlConnectionEx e) {
+              System.out.println("findEmployeeById failed: " + e.getMessage());
+          }
     }
-    public List<LeaveRequestDto> getLeaveRequests() throws SQLException {
+    public List<LeaveRequestDto> getLeaveRequests() throws SqlConnectionEx {
         List<LeaveRequest> leaveRequests = repository.findAll();
         LeaveRequestDto leaveRequestDto = new LeaveRequestDto();
        return leaveRequests.stream().map(r -> {
@@ -44,7 +48,7 @@ public class LeaveRequestService {
             return leaveRequestDto;
         }).toList();
     }
-    public void approveLeaveRequest(Long leaveRequestId) throws SQLException {
+    public void approveLeaveRequest(Long leaveRequestId) throws SqlConnectionEx {
         LeaveRequest leaveRequest = repository.findById(leaveRequestId);
         leaveRequest.setApproved(true);
         repository.update(leaveRequestId ,leaveRequest);

@@ -1,13 +1,15 @@
-package repository;
+package repository.proxy;
 
 import exception.SqlConnectionEx;
 import model.Employee;
+import repository.EmployeeRepository;
+import repository.EmployeeRepositoryImpl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class EmployeeProxyImpl implements EmployeeRepository{
+public class EmployeeProxyImpl implements EmployeeRepository {
     private final EmployeeRepositoryImpl realDao = new EmployeeRepositoryImpl();
     private final List<Employee> failedInserts = new ArrayList<>();
 

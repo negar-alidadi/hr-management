@@ -1,5 +1,6 @@
 package controller;
 
+import exception.SqlConnectionEx;
 import model.Employee;
 import service.EmployeeService;
 
@@ -13,19 +14,19 @@ public class EmployeeController {
     }
     public EmployeeController(){}
 
-    public Employee searchEmployee(Long id) throws SQLException {
+    public Employee searchEmployee(Long id)throws SqlConnectionEx   {
       return   employeeService.getEmployeeById(id);
     }
-    public Employee insertEmployee(Employee employee) throws SQLException {
+    public Employee insertEmployee(Employee employee) throws SqlConnectionEx  {
         return employeeService.add(employee);
     }
-    public void editEmployee(Long id,Employee employee) throws SQLException {
+    public void editEmployee(Long id,Employee employee) throws SqlConnectionEx  {
         employeeService.update(id,employee);
     }
-    public void removeEmployee(Long id) throws SQLException {
+    public void removeEmployee(Long id) throws SqlConnectionEx  {
         employeeService.delete(id);
     }
-    public List<Employee> getAllEmployees() throws SQLException {
+    public List<Employee> getAllEmployees() throws SqlConnectionEx {
         return employeeService.getAllEmployees();
     }
 

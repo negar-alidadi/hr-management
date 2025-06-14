@@ -16,143 +16,136 @@ import java.util.Optional;
 
 public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
-    private EmployeeRepository employeeRepository;
-    public LeaveRequestRepositoryImpl(EmployeeRepository employeeRepository)  {
+    public final EmployeeRepository employeeRepository;
+
+    public LeaveRequestRepositoryImpl(EmployeeRepository employeeRepository) {
         this.employeeRepository = employeeRepository;
     }
 
     @Override
-        public void save(LeaveRequest leaveRequest,Long employeeId)  {
-            String seqSQL = "select request_seq.nextval id from dual";
-            String insertSQL = "insert into leave_request (id, employeeId, startDate, endDate, approved) values (?,?,?,?,?)";
+    public void save(LeaveRequest leaveRequest, Long employeeId) {
+        String seqSQL = "SELECT request_seq.NEXTVAL id FROM dual";
+        String insertSQL = "INSERT INTO leave_request (id, employeeId, startDate, endDate, approved) VALUES (?, ?, ?, ?, ?)";
 
-            try (Connection connection = JDBC.getConnection();
-                 PreparedStatement seqStmt = connection.prepareStatement(seqSQL);
-                 ResultSet resultSet = seqStmt.executeQuery()) {
-                resultSet.next();
+        try (Connection connection = JDBC.getConnection();
+             PreparedStatement seqStmt = connection.prepareStatement(seqSQL);
+             ResultSet resultSet = seqStmt.executeQuery()) {
+
+            if (resultSet.next()) {
                 leaveRequest.setId(resultSet.getLong("id"));
-
-
-                try (PreparedStatement insertStmt = connection.prepareStatement(insertSQL)) {
-                    insertStmt.setLong(1, leaveRequest.getId());
-                    insertStmt.setLong(2, employeeId);
-                    insertStmt.setDate(3, leaveRequest.getStartDate());
-                    insertStmt.setDate(4, leaveRequest.getEndDate());
-                    insertStmt.setBoolean(5, leaveRequest.isApproved());
-                    insertStmt.executeUpdate();
-                }
-            }catch (SQLException e){
-                throw new SqlConnectionEx("data base connection failed"+e.getMessage());
+            } else {
+                throw new SqlConnectionEx("Could not get sequence value from DB");
             }
-        }
-//        try(Connection connection = JDBC.getConnection();
-//            PreparedStatement preparedStatement= connection
-//                    .prepareStatement("select request_seq.nextval id from dual")){
-//            ResultSet resultSet = preparedStatement.executeQuery();
-//            resultSet.next();
-//            leaveRequest.setId(resultSet.getLong("id"));
-//            connection.prepareStatement(("insert into leave_request (id,employeeId,startDate,endDate,approved) values (?,?,?,?,?)"));
-//        preparedStatement.setLong(1, leaveRequest.getId());
-//        preparedStatement.setLong(2, leaveRequest.getEmployee().getId());
-//        preparedStatement.setDate(3,leaveRequest.getStartDate());
-//        preparedStatement.setDate(4,leaveRequest.getEndDate());
-//        preparedStatement.setBoolean(5,leaveRequest.isApproved());
-//        preparedStatement.executeQuery();
-//
-//    }}
 
-    @Override
-    public List<LeaveRequest> findAll()  {
-        try(Connection connection = JDBC.getConnection();
-            PreparedStatement preparedStatement=  connection.prepareStatement(("select * from leave_request"))){
-        ResultSet resultSet = preparedStatement.executeQuery();
-        resultSet.next();
-        Employee employee = employeeRepository.findEmployeeById(resultSet.getLong("employeeId"));
-        List<LeaveRequest> leaveRequests = new ArrayList<>();
-        while (resultSet.next()) {
-            LeaveRequest leaveRequest = new LeaveRequest();
-            leaveRequest.setId(resultSet.getLong("id"));
-            leaveRequest.setEmployee(employee);
-            leaveRequest.setStartDate(resultSet.getDate("startDate"));
-            leaveRequest.setEndDate(resultSet.getDate("endDate"));
-            leaveRequest.setApproved(resultSet.getBoolean("approved"));
-            leaveRequests.add(leaveRequest);
-        }
-        return leaveRequests;
-    }catch (SQLException e){
-            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
-        }}
-
-    @Override
-    public LeaveRequest findById(Long id)  {
-        try(Connection connection = JDBC.getConnection();
-
-            PreparedStatement preparedStatement=  connection.prepareStatement("select * from leave_request where id = ?")){
-        {
-            preparedStatement.setLong(1, id);
-            LeaveRequest leaveRequest = new LeaveRequest();
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                leaveRequest.setId(resultSet.getLong("id"));
-                Long employeeId = resultSet.getLong("employeeId");
-                Employee employee = employeeRepository.findEmployeeById(employeeId);
-                leaveRequest.setEmployee(employee);
-                leaveRequest.setStartDate(resultSet.getDate("startDate"));
-                leaveRequest.setEndDate(resultSet.getDate("endDate"));
-                leaveRequest.setApproved(resultSet.getBoolean("approved"));
+            try (PreparedStatement insertStmt = connection.prepareStatement(insertSQL)) {
+                insertStmt.setLong(1, leaveRequest.getId());
+                insertStmt.setLong(2, employeeId);
+                insertStmt.setDate(3, leaveRequest.getStartDate());
+                insertStmt.setDate(4, leaveRequest.getEndDate());
+                insertStmt.setBoolean(5, leaveRequest.isApproved());
+                insertStmt.executeUpdate();
             }
-            return leaveRequest;
-        }}catch (SQLException e){
-            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
+
+        } catch (SQLException e) {
+            throw new SqlConnectionEx("Database connection failed: " + e.getMessage());
         }
     }
 
     @Override
-    public void update(Long id,LeaveRequest leaveRequest)  {
-        try(Connection connection = JDBC.getConnection();
-            PreparedStatement preparedStatement=  connection.prepareStatement(("update leave_request set employeeId = ?, startDate = ?, endDate = ?, approved = ? where id = ?"))){
-        preparedStatement.setLong(1, leaveRequest.getEmployee().getId());
-        preparedStatement.setDate(2, leaveRequest.getStartDate());
-        preparedStatement.setDate(3, leaveRequest.getEndDate());
-        preparedStatement.setBoolean(4, leaveRequest.isApproved());
-        preparedStatement.setLong(5, id);
-            int rowsAffected = preparedStatement.executeUpdate();
+    public List<LeaveRequest> findAll() {
+        String sql = "SELECT * FROM leave_request";
+        List<LeaveRequest> leaveRequests = new ArrayList<>();
 
-            if (rowsAffected == 0) {
-                System.out.println("No employee found with id: " + id);
-            } else {
-                System.out.println("Employee with id " + id + " updated successfully.");
+        try (Connection connection = JDBC.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                LeaveRequest leaveRequest = new LeaveRequest();
+                leaveRequest.setId(rs.getLong("id"));
+                Long empId = rs.getLong("employeeId");
+                Employee employee = employeeRepository.findEmployeeById(empId);
+                leaveRequest.setEmployee(employee);
+                leaveRequest.setStartDate(rs.getDate("startDate"));
+                leaveRequest.setEndDate(rs.getDate("endDate"));
+                leaveRequest.setApproved(rs.getBoolean("approved"));
+                leaveRequests.add(leaveRequest);
             }
-    }catch (SQLException e){
-            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
-        }}
+            return leaveRequests;
+
+        } catch (SQLException e) {
+            throw new SqlConnectionEx("Database connection failed: " + e.getMessage());
+        }
+    }
 
     @Override
-    public void delete(Long id)  {
-        try(Connection connection = JDBC.getConnection();
-            PreparedStatement preparedStatement=  connection.prepareStatement("delete from leave_request where id = ?")){
-        preparedStatement.setLong(1, id);
-            int rowsAffected = preparedStatement.executeUpdate();
+    public LeaveRequest findById(Long id) {
+        String sql = "SELECT * FROM leave_request WHERE id = ?";
 
-            if (rowsAffected == 0) {
-                System.out.println("No employee found with id: " + id);
+        try (Connection connection = JDBC.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                LeaveRequest leaveRequest = new LeaveRequest();
+                leaveRequest.setId(rs.getLong("id"));
+                Employee employee = employeeRepository.findEmployeeById(rs.getLong("employeeId"));
+                leaveRequest.setEmployee(employee);
+                leaveRequest.setStartDate(rs.getDate("startDate"));
+                leaveRequest.setEndDate(rs.getDate("endDate"));
+                leaveRequest.setApproved(rs.getBoolean("approved"));
+                return leaveRequest;
             } else {
-                System.out.println("Employee with id " + id + " updated successfully.");
+                return null;
             }
-    }catch (SQLException e){
-            throw new SqlConnectionEx("data base connection failed"+e.getMessage());
-        }}
 
-//    @Override
-//    public void commit() throws SQLException {
-//        connection.commit();
-//
-//    }
-//
-//    @Override
-//    public void close() throws Exception {
-//        preparedStatement.close();
-//        connection.close();
-//
-//    }
+        } catch (SQLException e) {
+            throw new SqlConnectionEx("Database connection failed: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void update(Long id, LeaveRequest leaveRequest) {
+        String sql = "UPDATE leave_request SET employeeId = ?, startDate = ?, endDate = ?, approved = ? WHERE id = ?";
+
+        try (Connection connection = JDBC.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setLong(1, leaveRequest.getEmployee().getId());
+            ps.setDate(2, leaveRequest.getStartDate());
+            ps.setDate(3, leaveRequest.getEndDate());
+            ps.setBoolean(4, leaveRequest.isApproved());
+            ps.setLong(5, id);
+
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected == 0) {
+                System.out.println("No LeaveRequest found with id: " + id);
+            }
+
+        } catch (SQLException e) {
+            throw new SqlConnectionEx("Database connection failed: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void delete(Long id) {
+        String sql = "DELETE FROM leave_request WHERE id = ?";
+
+        try (Connection connection = JDBC.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected == 0) {
+                System.out.println("No LeaveRequest found with id: " + id);
+            }
+
+        } catch (SQLException e) {
+            throw new SqlConnectionEx("Database connection failed: " + e.getMessage());
+        }
+    }
 }
+
+

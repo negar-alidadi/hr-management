@@ -3,12 +3,13 @@ import controller.LeaveRequestController;
 import dto.LeaveRequestDto;
 import model.Employee;
 import repository.*;
+import repository.proxy.EmployeeProxyImpl;
+import repository.proxy.LeaveRequestProxy;
 import service.EmployeeService;
 import service.LeaveRequestService;
 
 import java.sql.Date;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.Scanner;
 
 public class Main {
@@ -16,7 +17,7 @@ public class Main {
     public static void main(String[] args) throws SQLException {
 
         EmployeeRepository employeeRepository = new EmployeeProxyImpl();
-        LeaveRequestRepository leaveRequestRepository = new LeaveRequestRepositoryImpl(employeeRepository);
+        LeaveRequestRepository leaveRequestRepository = new LeaveRequestProxy(employeeRepository);
 
         LeaveRequestService leaveRequestService = new LeaveRequestService(leaveRequestRepository,employeeRepository);
         EmployeeService employeeService = new EmployeeService(employeeRepository);
